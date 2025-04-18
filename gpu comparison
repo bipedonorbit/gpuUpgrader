@@ -1,0 +1,72 @@
+import json
+from PySide2.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QComboBox, QLineEdit , QHBoxLayout
+import sys
+
+# Load JSON data
+with open("benchmarkBlender.json", "r") as f:
+    data = json.load(f)
+
+gpus = data["body"]
+gpus = sorted(data["body"], key=lambda x: x[0].lower(), reverse=True)
+constructors = []
+model=[]
+fullnames = []
+for gpu in gpus:
+    split = gpu[0].split(" ")
+    constructorName = split[0]
+    constructors.append(constructorName)
+    modelName = " ".join(split[1:])
+    model.append(modelName)
+    fullname = gpu[0]
+    fullnames.append(fullname)
+constructors = list(set(constructors))
+
+
+
+class GPUScoreViewer(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("GPU Benchmark Viewer")
+        
+        self.dropdown = QComboBox()
+        self.dropdown.addItems([fullname for fullname in fullnames])
+        self.dropdown.currentIndexChanged.connect(self.update_label)
+        self.dropdown.currentIndexChanged.connect(self.update_labelResult)
+        self.dropdownConstructor = QComboBox()
+        self.dropdownConstructor.addItems([modelname for modelname in model])
+        self.priceLineEdit = QLineEdit()
+        self.priceLineEdit.setPlaceholderText("Enter GPU price")
+        self.priceLineEdit.textChanged.connect(self.update_labelResult)
+        self.label = QLabel("Select a GPU to see its score")
+        self.labelResutlt = QLabel("Select a GPU to see its score")
+
+        layoutDropdown = QHBoxLayout()
+        layoutDropdown.addWidget(self.dropdown)
+        # layoutDropdown.addWidget(self.dropdownConstructor)
+
+
+        layout = QVBoxLayout()
+        layout.addLayout(layoutDropdown)
+        layout.addWidget(self.label)
+        layout.addWidget(self.priceLineEdit)
+        layout.addWidget(self.labelResutlt)
+        self.setLayout(layout)
+        self.update_label(0)  # Show the first GPU's score initially
+
+
+    def update_label(self, index):
+        gpu_name, score, _ = gpus[index]
+        self.label.setText(f"{gpu_name}: Median Score: {score}")
+
+    def update_labelResult(self, price):
+        index = self.dropdown.currentIndex()
+        gpu_name, score, _ = gpus[index]
+        result = score / float(price) if price else 0
+        self.labelResutlt.setText(f"point per euro ={result}")
+
+# Main application
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    viewer = GPUScoreViewer()
+    viewer.show()
+    sys.exit(app.exec_())
