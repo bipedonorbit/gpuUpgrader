@@ -31,5 +31,19 @@
         "score": 907.96,
         "price": "",
         "link": ""
+    },
+    {
+        "ratio": "point per euro =9.079600000000001",
+        "name": "NVIDIA TITAN Xp",
+        "score": 907.96,
+        "price": "100",
+        "link": "10"
+    },
+    {
+        "ratio": "point per euro =0",
+        "name": "NVIDIA TITAN Xp",
+        "score": 907.96,
+        "price": "",
+        "link": ""
     }
 ]

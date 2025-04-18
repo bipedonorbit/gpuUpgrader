@@ -26,24 +26,21 @@ gpusResultData = loadJson("gpusResult.json")
 gpus = benchmarkBlenderData["body"]
 gpus = sorted(benchmarkBlenderData["body"], key=lambda x: x[0].lower(), reverse=True)
 gpusResult = []
-# constructors = []
-# model=[]
-# fullnames = []
-# for gpu in gpus:
-#     split = gpu[0].split(" ")
-#     constructorName = split[0]
-#     constructors.append(constructorName)
-#     modelName = " ".join(split[1:])
-#     model.append(modelName)
-#     fullname = gpu[0]
-#     fullnames.append(fullname)
-# constructors = list(set(constructors))
+
 
 class GPUScoreViewer(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("GPU Benchmark Viewer")
         
+        self.createWidgets()
+        self.createLayout()
+        self.connectSignals()
+        
+        self.update_label()  # Show the first GPU's score initially
+        self.createTable()
+
+    def createWidgets(self):
         self.dropdown = QComboBox()
         self.importButton = QPushButton()
         self.importButton.setText("Import")
@@ -51,44 +48,33 @@ class GPUScoreViewer(QWidget):
         self.exportButton.setText("export")
         self.addButton = QPushButton()
         self.addButton.setText("add")
-
-        self.dropdown.addItems([gpu[0] for gpu in gpus])
-        self.dropdown.currentIndexChanged.connect(self.update_label)
-        # self.dropdownConstructor = QComboBox()
-        # self.dropdownConstructor.addItems([modelname for modelname in model])
         self.priceLineEdit = QLineEdit()
         self.priceLineEdit.setPlaceholderText("Enter GPU price")
-        self.priceLineEdit.textChanged.connect(self.update_label)
+        self.dropdown.addItems([gpu[0] for gpu in gpus])
         self.linkLineEdit = QLineEdit()
         self.linkLineEdit.setPlaceholderText("Enter GPU link")
-        self.priceLineEdit.setPlaceholderText("Enter GPU price")
         self.label = QLabel("Select a GPU to see its score")
         self.labelResutlt = QLabel("Select a GPU to see its score")
 
-        buttonLayout = QHBoxLayout()
-        buttonLayout.addWidget(self.importButton)
-        # buttonLayout.addWidget(self.exportButton)
-        buttonLayout.addWidget(self.addButton)
-
-        layoutDropdown = QHBoxLayout()
-        layoutDropdown.addWidget(self.dropdown)
-        # layoutDropdown.addWidget(self.dropdownConstructor)
-
-
-        self.layout = QVBoxLayout()
-        self.layout.addLayout(layoutDropdown)
-        self.layout.addWidget(self.label)
-        self.layout.addWidget(self.priceLineEdit)
-        self.layout.addWidget(self.labelResutlt)
-        self.layout.addWidget(self.linkLineEdit)
-        self.layout.addLayout(buttonLayout)
-        self.setLayout(self.layout)
-        self.update_label()  # Show the first GPU's score initially
-
-        self.importButton.clicked.connect(self.importData)
-        # self.exportButton.clicked.connect(self.exportData)
-        self.addButton.clicked.connect(self.addEntry)
+    def createLayout(self):
+        self.buttonLayout = QHBoxLayout()
+        self.buttonLayout.addWidget(self.importButton)
+        self.buttonLayout.addWidget(self.addButton)
+        self.layoutMain = QVBoxLayout()
+        self.layoutMain.addWidget(self.dropdown)
+        self.layoutMain.addWidget(self.label)
+        self.layoutMain.addWidget(self.priceLineEdit)
+        self.layoutMain.addWidget(self.labelResutlt)
+        self.layoutMain.addWidget(self.linkLineEdit)
+        self.layoutMain.addLayout(self.buttonLayout)
+        self.setLayout(self.layoutMain)
         
+    def connectSignals(self):
+        self.dropdown.currentIndexChanged.connect(self.update_label)
+        self.priceLineEdit.textChanged.connect(self.update_label)
+        self.importButton.clicked.connect(self.importData)
+        self.addButton.clicked.connect(self.addEntry)
+
     def createTable(self):
         gpusResultData = loadJson("gpusResult.json")
         
@@ -98,7 +84,7 @@ class GPUScoreViewer(QWidget):
             self.table = QTableWidget()
             self.table.setColumnCount(5)
             self.table.setHorizontalHeaderLabels(["ratio","Name", "Score", "Price", "Link"])
-            self.layout.addWidget(self.table)
+            self.layoutMain.addWidget(self.table)
 
         self.table.setRowCount(len(gpusResultData))
         for row, entry in enumerate(gpusResultData):
